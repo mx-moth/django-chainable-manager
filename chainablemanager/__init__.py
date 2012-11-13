@@ -1,0 +1,1 @@
+from chainablemanager.manager import ChainableManager
