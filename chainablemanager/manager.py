@@ -2,14 +2,6 @@ from django.db.models import Manager
 from django.db.models.query import QuerySet
 
 
-def get_query_set(self):
-    """
-    Create a QuerySet for querying this model. Will also have all the chainable
-    methods defined on `QuerySetMixin`.
-    """
-    return self.QuerySet(self.model, using=self._db)
-
-
 class ChainableManagerMetaclass(type):
     """
     Metaclass for ChainableManager.
@@ -29,7 +21,6 @@ class ChainableManagerMetaclass(type):
 
         # Set the queryset, and a custom get_query_set method
         attrs['QuerySet'] = FilterQuerySet
-        attrs['get_query_set'] = get_query_set
 
         # Finish constructing the class
         return super(ChainableManagerMetaclass, mcs).__new__(
@@ -45,3 +36,10 @@ class ChainableManager(Manager):
     custom, chainable methods on this class instead.
     """
     __metaclass__ = ChainableManagerMetaclass
+
+    def get_query_set(self):
+        """
+        Create a QuerySet for querying this model. Will also have all the
+        chainable methods defined on `QuerySetMixin`.
+        """
+        return self.QuerySet(self.model, using=self._db)
