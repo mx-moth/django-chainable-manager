@@ -12,7 +12,7 @@ Installing
 Using
 -----
 
-Create a Manager that extends `chainablemanager.Manager`:
+Create a Manager that extends `chainablemanager.ChainableManager`:
 
 ```python
 from django.db import models
