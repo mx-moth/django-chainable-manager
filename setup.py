@@ -12,7 +12,7 @@ except ImportError:
 
 setup(
     name='django-chainable-manager',
-    version="0.1.0",
+    version="0.1.1",
     description='Chainable methods on Model managers',
     author='Tim Heap',
     author_email='heap.tim@gmail.com',
