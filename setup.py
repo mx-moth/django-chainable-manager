@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Install django-admin-extensions using setuptools
+Install django-chainable-manager using setuptools
 """
 
 try:
@@ -16,7 +16,7 @@ setup(
     description='Chainable methods on Model managers',
     author='Tim Heap',
     author_email='heap.tim@gmail.com',
-    url='https://bitbucket.org/tim_heap/django-admin-extensions',
+    url='https://bitbucket.org/tim_heap/django-chainable-manager',
 
     install_requires=['Django>=1.4'],
     zip_safe=False,
