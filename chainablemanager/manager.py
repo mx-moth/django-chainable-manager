@@ -1,30 +1,45 @@
+from functools import wraps
+
 from django.db.models import Manager
 from django.db.models.query import QuerySet
+
+
+def _make_proxy(name, fn):
+    @wraps(fn)
+    def _proxy(self, *args, **kwargs):
+        qs = self.get_query_set()
+        return getattr(qs, name)(*args, **kwargs)
+
+    return _proxy
 
 
 class ChainableManagerMetaclass(type):
     """
     Metaclass for ChainableManager.
     """
-    def __new__(mcs, name, bases, attrs):
+    def __new__(cls, name, bases, attrs):
+        cls = super(ChainableManagerMetaclass, cls).__new__(
+            cls, name, bases, attrs)
 
         # Get the custom QuertSet mixin defined on the class
-        QuerySetMixin = attrs.get('QuerySetMixin', object)
+        QuerySetMixin = getattr(cls, 'QuerySetMixin', None)
 
-        # Add it as a base to this class
-        bases = bases + (QuerySetMixin, )
+        # Bail here if there is no QuerySetMixin
+        if QuerySetMixin is None:
+            return cls
 
-        # And also as a base to a custom QuerySet
-        class FilterQuerySet(QuerySet, QuerySetMixin):
-            pass
-        FilterQuerySet.__name__ = 'QuerySet'
+        # Make a custom QuerySet from the mixin
+        methods = dict(QuerySetMixin.__dict__)
+        ChainableQuerySet = type('ChainableQuerySet', (QuerySet, ),
+            methods)
+        setattr(cls, 'ChainableQuerySet', ChainableQuerySet)
 
-        # Set the queryset, and a custom get_query_set method
-        attrs['QuerySet'] = FilterQuerySet
+        # Make a proxy for all of the methods on the mixin
+        for name, fn in methods.items():
+            if callable(fn):
+                setattr(cls, name, _make_proxy(name, fn))
 
-        # Finish constructing the class
-        return super(ChainableManagerMetaclass, mcs).__new__(
-            mcs, name, bases, attrs)
+        return cls
 
 
 class ChainableManager(Manager):
@@ -37,9 +52,11 @@ class ChainableManager(Manager):
     """
     __metaclass__ = ChainableManagerMetaclass
 
+    use_for_related_fields = True
+
     def get_query_set(self):
         """
         Create a QuerySet for querying this model. Will also have all the
         chainable methods defined on `QuerySetMixin`.
         """
-        return self.QuerySet(self.model, using=self._db)
+        return self.ChainableQuerySet(self.model, using=self._db)
