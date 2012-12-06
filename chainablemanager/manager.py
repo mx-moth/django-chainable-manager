@@ -36,7 +36,8 @@ class ChainableManagerMetaclass(type):
 
         # Make a new class with the mixin in place
         attrs['ChainableQuerySet'] = ChainableQuerySet
-        bases = (QuerySetMixin,) + bases
+        bases = bases + (QuerySetMixin, )
+
         cls = super(ChainableManagerMetaclass, cls).__new__(
             cls, name, bases, attrs)
 
