@@ -18,26 +18,27 @@ class ChainableManagerMetaclass(type):
     Metaclass for ChainableManager.
     """
     def __new__(cls, name, bases, attrs):
-        cls = super(ChainableManagerMetaclass, cls).__new__(
+        # Construct the class as normal so we can examine it. We will not
+        # actually use this class, unless there is no queryset mixin
+        temp_cls = super(ChainableManagerMetaclass, cls).__new__(
             cls, name, bases, attrs)
 
-        # Get the custom QuertSet mixin defined on the class
-        QuerySetMixin = getattr(cls, 'QuerySetMixin', None)
+        # Get the custom QuerySet mixin defined on the class
+        QuerySetMixin = getattr(temp_cls, 'QuerySetMixin', None)
 
         # Bail here if there is no QuerySetMixin
         if QuerySetMixin is None:
-            return cls
+            return temp_cls
 
         # Make a custom QuerySet from the mixin
-        methods = dict(QuerySetMixin.__dict__)
-        ChainableQuerySet = type('ChainableQuerySet', (QuerySet, ),
-            methods)
-        setattr(cls, 'ChainableQuerySet', ChainableQuerySet)
+        ChainableQuerySet = type('ChainableQuerySet',
+            (QuerySetMixin, QuerySet), {})
 
-        # Make a proxy for all of the methods on the mixin
-        for name, fn in methods.items():
-            if callable(fn):
-                setattr(cls, name, _make_proxy(name, fn))
+        # Make a new class with the mixin in place
+        attrs['ChainableQuerySet'] = ChainableQuerySet
+        bases = (QuerySetMixin,) + bases
+        cls = super(ChainableManagerMetaclass, cls).__new__(
+            cls, name, bases, attrs)
 
         return cls
 
