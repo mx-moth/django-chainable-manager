@@ -7,7 +7,9 @@ QuerySet hoops.
 Installing
 ----------
 
-# `pip install django-chainable-manager`
+Simply install the package using `pip`:
+
+`pip install django-chainable-manager`
 
 Using
 -----
