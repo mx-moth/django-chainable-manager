@@ -15,7 +15,7 @@ setup(
     version="0.4.0",
     description='Chainable methods on Model managers',
     author='Tim Heap',
-    author_email='heap.tim@gmail.com',
+    author_email='tim@timheap.me',
     url='https://bitbucket.org/tim_heap/django-chainable-manager',
 
     install_requires=['Django>=1.4'],
