@@ -2,18 +2,19 @@ from functools import wraps
 
 from django.db.models import Manager
 from django.db.models.query import QuerySet
+from django.utils.six import with_metaclass
 
 
 def _make_proxy(name, fn):
     @wraps(fn)
     def _proxy(self, *args, **kwargs):
-        qs = self.get_query_set()
+        qs = self.get_queryset()
         return getattr(qs, name)(*args, **kwargs)
 
     return _proxy
 
 
-class ChainableManagerMetaclass(type):
+class ChainableManagerMetaclass(type(Manager)):
     """
     Metaclass for ChainableManager.
     """
@@ -31,8 +32,8 @@ class ChainableManagerMetaclass(type):
             return temp_cls
 
         # Make a custom QuerySet from the mixin
-        ChainableQuerySet = type('ChainableQuerySet',
-            (QuerySetMixin, QuerySet), {})
+        ChainableQuerySet = type(
+            'ChainableQuerySet', (QuerySetMixin, QuerySet), {})
 
         # Make a new class with the mixin in place
         attrs['ChainableQuerySet'] = ChainableQuerySet
@@ -44,7 +45,7 @@ class ChainableManagerMetaclass(type):
         return cls
 
 
-class ChainableManager(Manager):
+class ChainableManager(with_metaclass(ChainableManagerMetaclass, Manager)):
     """
     A Model Manager that allows chaining custom filters and other methods on
     both the manager and any querysets produced by it.
@@ -52,11 +53,10 @@ class ChainableManager(Manager):
     Add a class named `QuerySetMixin` to the Manager, and define all your
     custom, chainable methods on this class instead.
     """
-    __metaclass__ = ChainableManagerMetaclass
 
     use_for_related_fields = True
 
-    def get_query_set(self):
+    def get_queryset(self):
         """
         Create a QuerySet for querying this model. Will also have all the
         chainable methods defined on `QuerySetMixin`.
