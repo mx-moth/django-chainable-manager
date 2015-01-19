@@ -3,17 +3,18 @@
 Install django-chainable-manager using setuptools
 """
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, find_packages
+from setuptools import setup, find_packages
+
+from chainablemanager import __version__
+
+with open('README.rst', 'r') as f:
+    readme = f.read()
 
 setup(
     name='django-chainable-manager',
-    version="0.4.0",
+    version=__version__,
     description='Chainable methods on Model managers',
+    long_description=readme,
     author='Tim Heap',
     author_email='tim@timheap.me',
     url='https://bitbucket.org/tim_heap/django-chainable-manager',
